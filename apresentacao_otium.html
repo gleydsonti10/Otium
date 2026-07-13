@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otium - Apresentação do Sistema</title>
+
+    <!-- Google Fonts: Archivo (Display) e Nunito (Body) para o estilo Swiss Modern -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@800;900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===========================================
+           CSS CUSTOM PROPERTIES (THEME SWISS MODERN)
+           =========================================== */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9f9f9;
+            --bg-dark: #000000;
+            --text-primary: #000000;
+            --text-secondary: #555555;
+            --text-on-dark: #ffffff;
+            --accent: #ff3300; /* Vermelho Bauhaus */
+            --accent-muted: rgba(255, 51, 0, 0.1);
+            
+            --font-display: 'Archivo', sans-serif;
+            --font-body: 'Nunito', sans-serif;
+
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --duration-normal: 0.6s;
+        }
+
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        /* ===========================================
+           VIEWPORT FITTING BASE STYLES
+           =========================================== */
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background-color: var(--bg-primary);
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-height: 100%;
+            overflow: hidden;
+            padding: var(--slide-padding);
+            z-index: 2;
+        }
+
+        :root {
+            --title-size: clamp(2rem, 6vw, 4.5rem);
+            --h2-size: clamp(1.5rem, 4vw, 3rem);
+            --h3-size: clamp(1.1rem, 2.5vw, 1.8rem);
+            --body-size: clamp(0.85rem, 1.6vw, 1.15rem);
+            --small-size: clamp(0.7rem, 1vw, 0.9rem);
+            --slide-padding: clamp(2rem, 6vw, 6rem);
+            --content-gap: clamp(1rem, 3.5vw, 3rem);
+            --element-gap: clamp(0.5rem, 1.5vw, 1.5rem);
+        }
+
+        /* ===========================================
+           SWISS MODERN SIGNATURE LAYOUTS
+           =========================================== */
+        .swiss-grid-bg {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+            background-size: 80px 80px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .swiss-accent-bar {
+            width: clamp(30px, 8vw, 100px);
+            height: 8px;
+            background-color: var(--accent);
+            margin-bottom: var(--element-gap);
+        }
+
+        .slide-title-wrapper {
+            border-left: 8px solid var(--accent);
+            padding-left: clamp(15px, 2.5vw, 30px);
+            margin-bottom: var(--element-gap);
+        }
+
+        .slide h1 {
+            font-family: var(--font-display);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            line-height: 0.9;
+            font-size: var(--title-size);
+            color: var(--text-primary);
+        }
+
+        .slide h2 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            line-height: 1.0;
+            font-size: var(--h2-size);
+            color: var(--text-primary);
+        }
+
+        .slide p.subtitle {
+            font-size: var(--body-size);
+            color: var(--text-secondary);
+            font-weight: 600;
+            max-width: 700px;
+            margin-top: 10px;
+        }
+
+        /* Asymmetric split layouts */
+        .asymmetric-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: var(--content-gap);
+            align-items: center;
+        }
+
+        .feature-block {
+            border-top: 2px solid var(--text-primary);
+            padding-top: var(--element-gap);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .feature-block-num {
+            font-family: var(--font-display);
+            font-weight: 900;
+            color: var(--accent);
+            font-size: clamp(1.2rem, 3vw, 2rem);
+        }
+
+        .feature-block-title {
+            font-weight: 700;
+            font-size: var(--h3-size);
+            color: var(--text-primary);
+            text-transform: uppercase;
+        }
+
+        .feature-block-desc {
+            font-size: var(--body-size);
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Large block cards */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--element-gap);
+            margin-top: var(--element-gap);
+        }
+
+        .card-swiss {
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--text-primary);
+            padding: clamp(1rem, 2vw, 2.5rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            aspect-ratio: 16/10;
+            transition: all 0.3s ease;
+        }
+
+        .card-swiss:hover {
+            background-color: var(--bg-dark);
+            color: var(--text-on-dark);
+        }
+
+        .card-swiss:hover .feature-block-title {
+            color: var(--text-on-dark);
+        }
+
+        .card-swiss:hover .feature-block-desc {
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* Dark Slides */
+        .slide.dark-slide {
+            background-color: var(--bg-dark);
+            color: var(--text-on-dark);
+        }
+
+        .slide.dark-slide .swiss-grid-bg {
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+
+        .slide.dark-slide h1, .slide.dark-slide h2 {
+            color: var(--text-on-dark);
+        }
+
+        .slide.dark-slide .feature-block {
+            border-top-color: var(--text-on-dark);
+        }
+
+        .slide.dark-slide .feature-block-title {
+            color: var(--text-on-dark);
+        }
+
+        .slide.dark-slide .feature-block-desc {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Large formula slide */
+        .formula-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--element-gap);
+            background-color: var(--bg-secondary);
+            border: 4px solid var(--text-primary);
+            padding: clamp(1.5rem, 3vw, 4rem);
+            margin-top: var(--element-gap);
+        }
+
+        .formula-display {
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: clamp(1.5rem, 4vw, 3.5rem);
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            color: var(--text-primary);
+            line-height: 1.1;
+        }
+
+        .formula-display span.highlight {
+            color: var(--accent);
+        }
+
+        /* ===========================================
+           NAV CONTROLS & UTILITIES
+           =========================================== */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 6px;
+            background-color: var(--accent);
+            width: 0%;
+            z-index: 100;
+            transition: width 0.3s ease;
+        }
+
+        .nav-dots {
+            position: fixed;
+            right: clamp(1rem, 2vw, 2.5rem);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 99;
+        }
+
+        .nav-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dark-slide ~ .nav-dots .nav-dot {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-dot.active {
+            background-color: var(--accent);
+            transform: scale(1.3);
+        }
+
+        /* Keyboard help hints */
+        .keyboard-hint {
+            position: fixed;
+            bottom: clamp(1rem, 2vh, 1.5rem);
+            left: clamp(2rem, 6vw, 6rem);
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+            z-index: 98;
+            font-weight: 600;
+        }
+
+        /* ===========================================
+           ANIMATIONS (REVEAL ON SCROLL)
+           =========================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity var(--duration-normal) var(--ease-out-expo),
+                        transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: opacity 0.8s var(--ease-out-expo),
+                        transform 0.8s var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal-left {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Sequential Delays */
+        .reveal:nth-child(1) { transition-delay: 0.05s; }
+        .reveal:nth-child(2) { transition-delay: 0.15s; }
+        .reveal:nth-child(3) { transition-delay: 0.25s; }
+        .reveal:nth-child(4) { transition-delay: 0.35s; }
+
+        .delay-1 { transition-delay: 0.1s !important; }
+        .delay-2 { transition-delay: 0.2s !important; }
+        .delay-3 { transition-delay: 0.3s !important; }
+        .delay-4 { transition-delay: 0.4s !important; }
+
+        /* Responsive constraints heights */
+        @media (max-height: 700px) {
+            :root {
+                --slide-padding: clamp(1.5rem, 4vw, 4rem);
+                --content-gap: clamp(0.8rem, 2.5vw, 2rem);
+            }
+        }
+        @media (max-height: 600px) {
+            .keyboard-hint, .swiss-grid-bg { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Progresso no Topo -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navegação por Pontos (Dots) -->
+    <nav class="nav-dots" id="navDots"></nav>
+
+    <!-- Dica de teclado -->
+    <div class="keyboard-hint">Use as Setas ↑ ↓ ou Barra de Espaço para navegar</div>
+
+
+    <!-- SLIDE 1: CAPA -->
+    <section class="slide dark-slide visible">
+        <div class="swiss-grid-bg"></div>
+        <div class="slide-content">
+            <div class="swiss-accent-bar reveal"></div>
+            <h1 class="reveal">OTIUM</h1>
+            <h2 class="reveal text-accent" style="color: var(--accent);">Gestão Inteligente de Saúde</h2>
+            <p class="subtitle reveal" style="color: rgba(255,255,255,0.6);">
+                A plataforma definitiva para conciliação de faturamento, repasse de clínicas e gestão de representantes comerciais.
+            </p>
+        </div>
+    </section>
+
+
+    <!-- SLIDE 2: O DESAFIO -->
+    <section class="slide">
+        <div class="swiss-grid-bg"></div>
+        <div class="slide-content">
+            <div class="slide-title-wrapper reveal-left">
+                <h2>O Desafio</h2>
+                <p class="subtitle">A complexidade no fluxo financeiro das redes de clínicas</p>
+            </div>
+            
+            <div class="asymmetric-grid" style="margin-top: var(--content-gap);">
+                <div class="feature-block reveal">
+                    <span class="feature-block-num">01</span>
+                    <span class="feature-block-title">Discrepâncias de Caixa</span>
+                    <span class="feature-block-desc">
+                        Redes de saúde sofrem com faturamentos brutos que não fecham matematicamente devido a repasses paralelos para clínicas e comissões de terceiros.
+                    </span>
+                </div>
+                <div class="feature-block reveal delay-1">
+                    <span class="feature-block-num">02</span>
+                    <span class="feature-block-title">Spreadsheets Manuais</span>
+                    <span class="feature-block-desc">
+                        A apuração manual de ciclos de faturamento em planilhas gera erros operacionais graves, atrasos de pagamentos e perda de credibilidade.
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- SLIDE 3: A SOLUÇÃO -->
+    <section class="slide">
+        <div class="swiss-grid-bg"></div>
+        <div class="slide-content">
+            <div class="slide-title-wrapper reveal-left">
+                <h2>A Solução Otium</h2>
+                <p class="subtitle">Integração ponta a ponta e automação real</p>
+            </div>
+
+            <div class="grid-cards">
+                <div class="card-swiss reveal">
+                    <span class="feature-block-num">01</span>
+                    <span class="feature-block-title">Unificação</span>
+                    <span class="feature-block-desc">Agendas, atendimentos e transações financeiras em um único ecossistema.</span>
+                </div>
+                <div class="card-swiss reveal delay-1">
+                    <span class="feature-block-num">02</span>
+                    <span class="feature-block-title">Transparência</span>
+                    <span class="feature-block-desc">Visualização imediata dos repasses de clínicas e comissões de representantes.</span>
+                </div>
+                <div class="card-swiss reveal delay-2">
+                    <span class="feature-block-num">03</span>
+                    <span class="feature-block-title">Automação</span>
+                    <span class="feature-block-desc">Fechamento de faturamento e ciclos em lote de forma individual ou em massa.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- SLIDE 4: INDICADORES BI (CENTRAL BI) -->
+    <section class="slide dark-slide">
+        <div class="swiss-grid-bg"></div>
+        <div class="slide-content">
+            <div class="slide-title-wrapper reveal-left" style="border-left-color: var(--accent);">
+                <h2>Central BI</h2>
+                <p class="subtitle" style="color: rgba(255,255,255,0.6);">Painel Executivo e Métricas em Tempo Real</p>
+            </div>
+
+            <div class="asymmetric-grid" style="margin-top: var(--content-gap);">
+                <div class="space-y-4">
+                    <div class="feature-block reveal">
+                        <span class="feature-block-title">Visão 360 Graus</span>
+                        <span class="feature-block-desc">
+                            Acompanhamento de faturamento bruto, repasse de parceiros, comissão de representantes e o lucro líquido da rede Otium em tempo real.
+                        </span>
+                    </div>
+                    <div class="feature-block reveal delay-1" style="margin-top: 15px;">
+                        <span class="feature-block-title">Linha Histórica Inteligente</span>
+                        <span class="feature-block-desc">
+                            Gráficos de evolução histórica integrando todas as métricas simultaneamente para tomadas de decisões rápidas e seguras.
+                        </span>
+                    </div>
+                </div>
+                <div style="border: 2px solid var(--accent); padding: 25px; background: rgba(255,51,0,0.05);" class="reveal delay-2">
+                    <h3 style="font-family: var(--font-display); font-weight: 900; font-size: var(--h3-size); margin-bottom: 10px;">KPIs COBERTOS</h3>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: var(--body-size); font-weight: 600;">
+                        <li>• Faturamento Bruto</li>
+                        <li>• Repasse Clínicas</li>
+                        <li>• Repasse Representantes</li>
+                        <li>• Lucro Líquido Otium</li>
+                        <li>• Quantidade de Consultas</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- SLIDE 5: FÓRMULA FINANCEIRA -->
+    <section class="slide">
+        <div class="swiss-grid-bg"></div>
+        <div class="slide-content">
+            <div class="slide-title-wrapper reveal-left">
+                <h2>Identidade Financeira</h2>
+                <p class="subtitle">Consistência e precisão matemática de ponta a ponta</p>
+            </div>
+
+            <div class="formula-container reveal">
+                <span class="formula-display">
+                    Faturamento Bruto =<br>
+                    <span class="highlight">Repasse Clínicas</span> + <span class="highlight">Repasse Representantes</span> + <span class="highlight">Lucro Otium</span>
+                </span>
+            </div>
+            
+            <p class="reveal delay-2" style="font-size: var(--body-size); color: var(--text-secondary); margin-top: 15px; font-weight: 600;">
+                ✓ A Otium garante que cada centavo pago pelo paciente seja matematicamente rastreado e distribuído sem inconsistências no fechamento financeiro.
+            </p>
+        </div>
+    </section>
+
+
+    <!-- SLIDE 6: GERAÇÃO DE LOTES -->
+    <section class="slide">
+        <div class="swiss-grid-bg"></div>
+        <div class="slide-content">
+            <div class="slide-title-wrapper reveal-left">
+                <h2>Geração de Lotes</h2>
+                <p class="subtitle">Ciclos de fechamento e repasse rápidos e sem erros</p>
+            </div>
+
+            <div class="grid-cards">
+                <div class="card-swiss reveal">
+                    <span class="feature-block-num">A</span>
+                    <span class="feature-block-title">Lote Individual</span>
+                    <span class="feature-block-desc">Gere lotes para parceiros específicos de forma manual e com datas limites customizadas.</span>
+                </div>
+                <div class="card-swiss reveal delay-1">
+                    <span class="feature-block-num">B</span>
+                    <span class="feature-block-title">Lote em Massa</span>
+                    <span class="feature-block-desc">O sistema analisa e gera lotes automaticamente para todos os parceiros com ciclos vencidos.</span>
+                </div>
+                <div class="card-swiss reveal delay-2">
+                    <span class="feature-block-num">C</span>
+                    <span class="feature-block-title">Liquidação Fácil</span>
+                    <span class="feature-block-desc">Gerencie e liquide lotes (Pagar/Cancelar) diretamente pela interface administrativa.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- SLIDE 7: PORTAL DE PARCEIROS -->
+    <section class="slide">
+        <div class="swiss-grid-bg"></div>
+        <div class="slide-content">
+            <div class="slide-title-wrapper reveal-left">
+                <h2>Clínicas & Parceiros</h2>
+                <p class="subtitle">Autonomia total para a rede credenciada</p>
+            </div>
+
+            <div class="asymmetric-grid" style="margin-top: var(--content-gap);">
+                <div class="feature-block reveal">
+                    <span class="feature-block-num">01</span>
+                    <span class="feature-block-title">Dados e Chaves Pix</span>
+                    <span class="feature-block-desc">
+                        As clínicas parceiras cadastram seus dados, endereços e contas bancárias ou chaves Pix diretamente para liquidação agilizada dos lotes de repasse.
+                    </span>
+                </div>
+                <div class="feature-block reveal delay-1">
+                    <span class="feature-block-num">02</span>
+                    <span class="feature-block-title">Ciclos Sob Medida</span>
+                    <span class="feature-block-desc">
+                        Configure ciclos de repasses de 7, 15 ou 30 dias para cada parceiro de forma isolada, respeitando os seus acordos de negócios.
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- SLIDE 8: RELATÓRIOS E EXPORTAÇÃO -->
+    <section class="slide">
+        <div class="swiss-grid-bg"></div>
+        <div class="slide-content">
+            <div class="slide-title-wrapper reveal-left">
+                <h2>Relatórios e Exportações</h2>
+                <p class="subtitle">Apoio contábil e fiscal de alta fidelidade</p>
+            </div>
+
+            <div class="grid-cards">
+                <div class="card-swiss reveal">
+                    <span class="feature-block-num">01</span>
+                    <span class="feature-block-title">Agendamentos</span>
+                    <span class="feature-block-desc">Detalhamento unitário de consultas realizadas e status de faturamento.</span>
+                </div>
+                <div class="card-swiss reveal delay-1">
+                    <span class="feature-block-num">02</span>
+                    <span class="feature-block-title">Impressão Limpa</span>
+                    <span class="feature-block-desc">Folhas de relatórios estilizadas sob medida para impressão física ou PDF.</span>
+                </div>
+                <div class="card-swiss reveal delay-2">
+                    <span class="feature-block-num">03</span>
+                    <span class="feature-block-title">Planilhas CSV</span>
+                    <span class="feature-block-desc">Exporte dados tabulares de forma simples para integrar com qualquer outro software ERP.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- SLIDE 9: SEGURANÇA E ACESSO -->
+    <section class="slide dark-slide">
+        <div class="swiss-grid-bg"></div>
+        <div class="slide-content">
+            <div class="slide-title-wrapper reveal-left" style="border-left-color: var(--accent);">
+                <h2>Segurança</h2>
+                <p class="subtitle" style="color: rgba(255,255,255,0.6);">Níveis de acesso baseados em funções e criptografia</p>
+            </div>
+
+            <div class="asymmetric-grid" style="margin-top: var(--content-gap);">
+                <div class="feature-block reveal">
+                    <span class="feature-block-num">50+</span>
+                    <span class="feature-block-title">Administradores</span>
+                    <span class="feature-block-desc">
+                        Acesso irrestrito a configurações globais do sistema, geração de faturamento, liquidações financeiras e cadastro de credenciais.
+                    </span>
+                </div>
+                <div class="feature-block reveal delay-1">
+                    <span class="feature-block-num">&lt; 50</span>
+                    <span class="feature-block-title">Operadores & Parceiros</span>
+                    <span class="feature-block-desc">
+                        Visualização restrita apenas a relatórios de agendamentos autorizados, sem privilégios para gerar ou liquidar lotes.
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- SLIDE 10: TECNOLOGIA -->
+    <section class="slide">
+        <div class="swiss-grid-bg"></div>
+        <div class="slide-content">
+            <div class="slide-title-wrapper reveal-left">
+                <h2>Stack Tecnológica</h2>
+                <p class="subtitle">Desempenho ágil, escalável e arquitetura de microsserviços</p>
+            </div>
+
+            <div class="grid-cards">
+                <div class="card-swiss reveal">
+                    <span class="feature-block-num">⚡</span>
+                    <span class="feature-block-title">Next.js & React</span>
+                    <span class="feature-block-desc">Interface ágil, Single-Page App moderna e carregamentos sem refresh.</span>
+                </div>
+                <div class="card-swiss reveal delay-1">
+                    <span class="feature-block-num">⚙️</span>
+                    <span class="feature-block-title">Fastify API</span>
+                    <span class="feature-block-desc">Servidor de microsserviços de altíssimo desempenho e baixa latência de requisições.</span>
+                </div>
+                <div class="card-swiss reveal delay-2">
+                    <span class="feature-block-num">🗄️</span>
+                    <span class="feature-block-title">Prisma & MySQL</span>
+                    <span class="feature-block-desc">Banco de dados relacional robusto com transações ACID seguras para faturamento.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- SLIDE 11: CONCLUSÃO -->
+    <section class="slide dark-slide">
+        <div class="swiss-grid-bg"></div>
+        <div class="slide-content">
+            <div class="swiss-accent-bar reveal"></div>
+            <h1 class="reveal">Pronto para o Futuro?</h1>
+            <h2 class="reveal" style="color: var(--accent);">Eleve a Gestão da sua Rede de Saúde</h2>
+            <p class="subtitle reveal" style="color: rgba(255,255,255,0.6); max-width: 650px;">
+                Chega de conciliações manuais, planilhas duplicadas e repasses com erro. Centralize sua rede médica com a segurança, controle e automação da plataforma Otium.
+            </p>
+        </div>
+    </section>
+
+
+    <script>
+        /* ===========================================
+           SLIDE PRESENTATION CONTROLLER
+           =========================================== */
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.currentSlide = 0;
+                this.isScrolling = false;
+                
+                this.init();
+            }
+
+            init() {
+                this.setupIntersectionObserver();
+                this.setupKeyboardNav();
+                this.setupTouchNav();
+                this.setupNavDots();
+                this.updateProgress();
+
+                // Trigger scroll de ajuste inicial se o browser recarregar no meio
+                this.handleScroll();
+                window.addEventListener('scroll', () => this.handleScroll(), { passive: true });
+            }
+
+            setupIntersectionObserver() {
+                const observerOptions = {
+                    root: null,
+                    threshold: 0.5
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            
+                            // Encontra o index correspondente
+                            const index = Array.from(this.slides).indexOf(entry.target);
+                            if (index !== -1) {
+                                this.currentSlide = index;
+                                this.updateDots();
+                                this.updateProgress();
+                            }
+                        } else {
+                            // Opcional: remove para re-animar toda vez que entra
+                            // entry.target.classList.remove('visible');
+                        }
+                    });
+                }, observerOptions);
+
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+
+            setupKeyboardNav() {
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                        e.preventDefault();
+                        this.navigate(1);
+                    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        this.navigate(-1);
+                    }
+                });
+            }
+
+            setupTouchNav() {
+                let startY = 0;
+                document.addEventListener('touchstart', (e) => {
+                    startY = e.touches[0].clientY;
+                }, { passive: true });
+
+                document.addEventListener('touchend', (e) => {
+                    const endY = e.changedTouches[0].clientY;
+                    const diff = startY - endY;
+                    if (Math.abs(diff) > 50) {
+                        this.navigate(diff > 0 ? 1 : -1);
+                    }
+                }, { passive: true });
+            }
+
+            setupNavDots() {
+                const dotsContainer = document.getElementById('navDots');
+                this.slides.forEach((slide, index) => {
+                    const dot = document.createElement('div');
+                    dot.classList.add('nav-dot');
+                    if (index === 0) dot.classList.add('active');
+                    dot.addEventListener('click', () => {
+                        this.slides[index].scrollIntoView({ behavior: 'smooth' });
+                    });
+                    dotsContainer.appendChild(dot);
+                });
+            }
+
+            updateDots() {
+                const dots = document.querySelectorAll('.nav-dot');
+                dots.forEach((dot, index) => {
+                    if (index === this.currentSlide) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+
+            updateProgress() {
+                const bar = document.getElementById('progressBar');
+                const percent = (this.currentSlide / (this.slides.length - 1)) * 100;
+                bar.style.width = `${percent}%`;
+            }
+
+            navigate(direction) {
+                if (this.isScrolling) return;
+                
+                const target = this.currentSlide + direction;
+                if (target >= 0 && target < this.slides.length) {
+                    this.isScrolling = true;
+                    this.slides[target].scrollIntoView({ behavior: 'smooth' });
+                    
+                    setTimeout(() => {
+                        this.isScrolling = false;
+                    }, 800); // tempo correspondente a animação
+                }
+            }
+
+            handleScroll() {
+                // Sincroniza o progresso em scroll nativo (trackpads, mouses mecânicos)
+                const scrollPos = window.scrollY;
+                const windowHeight = window.innerHeight;
+                const index = Math.round(scrollPos / windowHeight);
+                
+                if (index !== this.currentSlide && index >= 0 && index < this.slides.length) {
+                    this.currentSlide = index;
+                    this.updateDots();
+                    this.updateProgress();
+                }
+            }
+        }
+
+        // Instancia o controlador de apresentação ao carregar
+        window.addEventListener('DOMContentLoaded', () => {
+            new SlidePresentation();
+        });
+    </script>
+</body>
+</html>

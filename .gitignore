@@ -1,0 +1,29 @@
+# Database dump
+179_188_16_100.sql
+
+# PHP files & logs
+php.ini
+php.ini-old
+_php.ini
+.rnd
+.bash_history
+.bash_profile
+.viminfo
+sessions/
+
+# Node dependencies & logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+
+# Next.js build
+.next/
+out/
+build/
+
+# IDE files
+.vscode/
+.idea/
+.DS_Store

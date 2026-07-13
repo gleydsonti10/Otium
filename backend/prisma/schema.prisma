@@ -1,0 +1,530 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model keys {
+  id             Int        @id @default(autoincrement())
+  key            String     @db.VarChar(40)
+  level          Int
+  ignore_limits  Boolean    @default(false)
+  date_created   Int
+  last_action    DateTime   @default(now()) @db.DateTime(0)
+  is_private_key Boolean    @default(false)
+  ip_addresses   String?    @db.Text
+  user_id        BigInt     @db.UnsignedBigInt
+  id_role        BigInt     @db.UnsignedBigInt
+  tb_role        tb_role    @relation(fields: [id_role], references: [id_role], onDelete: NoAction, onUpdate: NoAction, map: "fk_keys_tb_role1")
+  tb_usuario     tb_usuario @relation(fields: [user_id], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_keys_tb_usuario1")
+
+  @@index([id_role], map: "fk_keys_tb_role1_idx")
+  @@index([user_id], map: "fk_keys_tb_usuario1_idx")
+}
+
+model limits {
+  id           Int    @id @default(autoincrement())
+  uri          String @db.VarChar(255)
+  count        Int
+  hour_started Int
+  api_key      String @db.VarChar(40)
+}
+
+model logs {
+  id            Int     @id @default(autoincrement())
+  uri           String  @db.VarChar(255)
+  method        String  @db.VarChar(6)
+  params        String? @db.Text
+  api_key       String  @db.VarChar(40)
+  ip_address    String  @db.VarChar(45)
+  time          Int
+  rtime         Float?  @db.Float
+  authorized    String  @db.VarChar(1)
+  response_code Int?    @default(0) @db.SmallInt
+}
+
+model tb_agendamento {
+  id_agendamento                                    BigInt                        @id @default(autoincrement()) @db.UnsignedBigInt
+  codigo                                            String?                       @unique(map: "codigo_UNIQUE") @db.VarChar(45)
+  status                                            tb_agendamento_status         @default(pendente)
+  representante_pago                                Boolean?                      @default(false)
+  data_realizacao                                   DateTime?                     @db.DateTime(0)
+  data_modificacao                                  DateTime?                     @db.DateTime(0)
+  data_criacao                                      DateTime                      @default(now()) @db.DateTime(0)
+  id_cliente                                        BigInt                        @db.UnsignedBigInt
+  id_parceiro                                       BigInt                        @db.UnsignedBigInt
+  id_financeiro                                     BigInt?                       @db.UnsignedBigInt
+  id_agendamento_pagamento                          BigInt?                       @db.UnsignedBigInt
+  id_representante                                  BigInt?                       @db.UnsignedBigInt
+  id_representante_pagamento                        BigInt?                       @db.UnsignedBigInt
+  created_by                                        BigInt                        @db.UnsignedBigInt
+  modified_by                                       BigInt?                       @db.UnsignedBigInt
+  tb_agendamento_pagamento                          tb_agendamento_pagamento?     @relation(fields: [id_agendamento_pagamento], references: [id_agendamento_pagamento], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_agendamento_tb_agendamento_pagamento1")
+  tb_cliente                                        tb_cliente                    @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_agendamento_tb_cliente1")
+  tb_financeiro                                     tb_financeiro?                @relation(fields: [id_financeiro], references: [id_financeiro], onUpdate: NoAction, map: "fk_tb_agendamento_tb_financeiro1")
+  tb_parceiro                                       tb_parceiro                   @relation(fields: [id_parceiro], references: [id_parceiro], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_agendamento_tb_parceiro1")
+  tb_representante                                  tb_representante?             @relation(fields: [id_representante], references: [id_representante], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_agendamento_tb_representante1")
+  tb_representante_pagamento                        tb_representante_pagamento?   @relation(fields: [id_representante_pagamento], references: [id_representante_pagamento], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_agendamento_tb_representante_pagamento1")
+  tb_usuario_tb_agendamento_created_byTotb_usuario  tb_usuario                    @relation("tb_agendamento_created_byTotb_usuario", fields: [created_by], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_agendamento_tb_usuario1")
+  tb_usuario_tb_agendamento_modified_byTotb_usuario tb_usuario?                   @relation("tb_agendamento_modified_byTotb_usuario", fields: [modified_by], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_agendamento_tb_usuario2")
+  tb_agendamento_procedimento                       tb_agendamento_procedimento[]
+  tb_movimento                                      tb_movimento[]
+
+  @@index([id_agendamento_pagamento], map: "fk_tb_agendamento_tb_agendamento_pagamento1_idx")
+  @@index([id_cliente], map: "fk_tb_agendamento_tb_cliente1_idx")
+  @@index([id_financeiro], map: "fk_tb_agendamento_tb_financeiro1_idx")
+  @@index([id_parceiro], map: "fk_tb_agendamento_tb_parceiro1_idx")
+  @@index([id_representante], map: "fk_tb_agendamento_tb_representante1_idx")
+  @@index([id_representante_pagamento], map: "fk_tb_agendamento_tb_representante_pagamento1_idx")
+  @@index([created_by], map: "fk_tb_agendamento_tb_usuario1_idx")
+  @@index([modified_by], map: "fk_tb_agendamento_tb_usuario2_idx")
+}
+
+model tb_agendamento_pagamento {
+  id_agendamento_pagamento       BigInt                         @id @default(autoincrement())
+  tipo                           tb_agendamento_pagamento_tipo? @default(entrada)
+  descricao                      String?                        @db.VarChar(255)
+  valor_pago_cartao              Decimal                        @default(0.00) @db.Decimal(9, 2)
+  valor_pago_especie             Decimal                        @default(0.00) @db.Decimal(9, 2)
+  valor_pago_pix                 Decimal                        @default(0.00) @db.Decimal(9, 2)
+  valor_adicional_cartao         Decimal                        @default(0.00) @db.Decimal(9, 2)
+  valor_representante            Decimal                        @default(0.00) @db.Decimal(9, 2)
+  valor_troco                    Decimal                        @default(0.00) @db.Decimal(9, 2)
+  id_caixa                       BigInt                         @db.UnsignedBigInt
+  parent_agendamento_pagamento   BigInt?                        @db.UnsignedBigInt
+  data_criacao                   DateTime?                      @default(now()) @db.DateTime(0)
+  tb_agendamento                 tb_agendamento[]
+  tb_caixa                       tb_caixa                       @relation(fields: [id_caixa], references: [id_caixa], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_agendamento_caixa_tb_caixa1")
+  tb_agendamento_pagamento       tb_agendamento_pagamento?      @relation("tb_agendamento_pagamentoTotb_agendamento_pagamento", fields: [parent_agendamento_pagamento], references: [id_agendamento_pagamento], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_agendamento_pagamento_tb_agendamento_pagamento1")
+  other_tb_agendamento_pagamento tb_agendamento_pagamento[]     @relation("tb_agendamento_pagamentoTotb_agendamento_pagamento")
+
+  @@index([id_caixa], map: "fk_tb_agendamento_caixa_tb_caixa1_idx")
+  @@index([parent_agendamento_pagamento], map: "fk_tb_agendamento_pagamento_tb_agendamento_pagamento1_idx")
+}
+
+model tb_agendamento_procedimento {
+  id_agendamento           BigInt                   @db.UnsignedBigInt
+  id_parceiro_procedimento BigInt                   @db.UnsignedBigInt
+  quantidade               Int
+  status                   Int                      @default(1) @db.TinyInt
+  desconto                 Decimal                  @default(0.00) @db.Decimal(9, 2)
+  data_criacao             DateTime                 @default(now()) @db.DateTime(0)
+  data_modificacao         DateTime?                @db.DateTime(0)
+  tb_agendamento           tb_agendamento           @relation(fields: [id_agendamento], references: [id_agendamento], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_agendamento_procedimento_tb_agendamento1")
+  tb_parceiro_procedimento tb_parceiro_procedimento @relation(fields: [id_parceiro_procedimento], references: [id_parceiro_procedimento], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_agendamento_procedimento_tb_parceiro_procedimento1")
+
+  @@id([id_agendamento, id_parceiro_procedimento])
+  @@index([id_parceiro_procedimento], map: "fk_tb_agendamento_procedimento_tb_parceiro_procedimento1_idx")
+}
+
+model tb_caixa {
+  id_caixa                 BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  valor_abertura           Decimal                    @db.Decimal(9, 2)
+  valor_fechamento         Decimal?                   @db.Decimal(9, 2)
+  total_cartao             Decimal?                   @db.Decimal(9, 2)
+  total_pix                Decimal?                   @db.Decimal(9, 2)
+  data_abertura            DateTime                   @default(now()) @db.DateTime(0)
+  data_fechamento          DateTime?                  @db.DateTime(0)
+  id_funcionario           BigInt?                    @db.UnsignedBigInt
+  id_usuario               BigInt                     @db.UnsignedBigInt
+  tb_agendamento_pagamento tb_agendamento_pagamento[]
+  tb_funcionario           tb_funcionario?            @relation(fields: [id_funcionario], references: [id_funcionario], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_caixa_tb_funcionario1")
+  tb_usuario               tb_usuario                 @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_caixa_tb_usuario1")
+
+  @@index([id_funcionario], map: "fk_tb_caixa_tb_funcionario1_idx")
+  @@index([id_usuario], map: "fk_tb_caixa_tb_usuario1_idx")
+}
+
+model tb_cidade {
+  id_cidade   Int           @id @db.UnsignedInt
+  nome        String        @db.VarChar(50)
+  uf          String        @db.Char(2)
+  tb_endereco tb_endereco[]
+}
+
+model tb_cliente {
+  id_cliente           BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  foto                 String?                @db.VarChar(255)
+  data_criacao         DateTime               @default(now()) @db.DateTime(0)
+  data_modificacao     DateTime?              @db.DateTime(0)
+  status               Int                    @default(1) @db.TinyInt
+  id_pessoa_fisica     BigInt                 @db.UnsignedBigInt
+  id_endereco          BigInt                 @db.UnsignedBigInt
+  created_by           BigInt                 @db.UnsignedBigInt
+  tb_agendamento       tb_agendamento[]
+  tb_endereco          tb_endereco            @relation(fields: [id_endereco], references: [id_endereco], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_cliente_tb_endereco1")
+  tb_pessoa_fisica     tb_pessoa_fisica       @relation(fields: [id_pessoa_fisica], references: [id_pessoa_fisica], onDelete: Cascade, onUpdate: NoAction, map: "fk_tb_cliente_tb_pessoa_fisica1")
+  tb_usuario           tb_usuario             @relation(fields: [created_by], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_tb_cliente_tb_usuario1")
+  tb_cliente_documento tb_cliente_documento[]
+
+  @@index([id_endereco], map: "fk_tb_cliente_tb_endereco1_idx")
+  @@index([id_pessoa_fisica], map: "fk_tb_cliente_tb_pessoa_fisica1_idx")
+  @@index([created_by], map: "fk_tb_cliente_tb_usuario1_idx")
+}
+
+model tb_cliente_documento {
+  id_cliente   BigInt       @db.UnsignedBigInt
+  id_documento BigInt       @db.UnsignedBigInt
+  tb_cliente   tb_cliente   @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_cliente_has_tb_documento_tb_cliente1")
+  tb_documento tb_documento @relation(fields: [id_documento], references: [id_documento], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_cliente_has_tb_documento_tb_documento1")
+
+  @@id([id_cliente, id_documento])
+  @@index([id_cliente], map: "fk_tb_cliente_has_tb_documento_tb_cliente1_idx")
+  @@index([id_documento], map: "fk_tb_cliente_has_tb_documento_tb_documento1_idx")
+}
+
+model tb_documento {
+  id_documento          BigInt                  @id @default(autoincrement()) @db.UnsignedBigInt
+  nome                  String                  @db.VarChar(90)
+  path                  String                  @db.VarChar(255)
+  descricao             String?                 @db.VarChar(255)
+  tipo                  String                  @db.VarChar(45)
+  data_criacao          DateTime                @default(now()) @db.DateTime(0)
+  data_modificacao      DateTime?               @db.DateTime(0)
+  tb_cliente_documento  tb_cliente_documento[]
+  tb_parceiro_documento tb_parceiro_documento[]
+}
+
+model tb_endereco {
+  id_endereco      BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  nome             String                @db.VarChar(45)
+  logradouro       String                @db.VarChar(150)
+  bairro           String                @db.VarChar(45)
+  numero           String?               @db.VarChar(15)
+  complemento      String?               @db.VarChar(90)
+  cep              String                @db.VarChar(9)
+  localizacao      Unsupported("point")?
+  lat              Decimal?              @db.Decimal(10, 8)
+  lng              Decimal?              @db.Decimal(11, 8)
+  data_criacao     DateTime              @default(now()) @db.DateTime(0)
+  data_modificacao DateTime?             @db.DateTime(0)
+  id_cidade        Int                   @db.UnsignedInt
+  tb_cliente       tb_cliente[]
+  tb_cidade        tb_cidade             @relation(fields: [id_cidade], references: [id_cidade], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_endereco_tb_cidade1")
+  tb_parceiro      tb_parceiro[]
+  tb_unidade       tb_unidade[]
+
+  @@index([id_cidade], map: "fk_tb_endereco_tb_cidade1_idx")
+}
+
+model tb_especialidade {
+  codigo_especialidade Int               @id @unique(map: "codigo_UNIQUE") @db.UnsignedInt
+  nome                 String            @db.VarChar(100)
+  tb_procedimento      tb_procedimento[]
+}
+
+model tb_financeiro {
+  id_financeiro    BigInt               @id @default(autoincrement()) @db.UnsignedBigInt
+  codigo           String?              @db.VarChar(45)
+  status           tb_financeiro_status @default(pendente)
+  data_criacao     DateTime             @default(now()) @db.DateTime(0)
+  data_modificacao DateTime?            @db.DateTime(0)
+  id_parceiro      BigInt               @db.UnsignedBigInt
+  created_by       BigInt?              @db.UnsignedBigInt
+  tb_agendamento   tb_agendamento[]
+  tb_parceiro      tb_parceiro          @relation(fields: [id_parceiro], references: [id_parceiro], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_financeiro_tb_parceiro1")
+  tb_usuario       tb_usuario?          @relation(fields: [created_by], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_financeiro_tb_usuario1")
+
+  @@index([id_parceiro], map: "fk_tb_financeiro_tb_parceiro1_idx")
+  @@index([created_by], map: "fk_tb_financeiro_tb_usuario1_idx")
+}
+
+model tb_funcionario {
+  id_funcionario   BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  id_unidade       BigInt           @db.UnsignedBigInt
+  id_pessoa_fisica BigInt           @db.UnsignedBigInt
+  tb_caixa         tb_caixa[]
+  tb_pessoa_fisica tb_pessoa_fisica @relation(fields: [id_pessoa_fisica], references: [id_pessoa_fisica], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_funcionario_tb_pessoa_fisica1")
+  tb_unidade       tb_unidade       @relation(fields: [id_unidade], references: [id_unidade], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_funcionario_tb_unidade1")
+
+  @@index([id_unidade], map: "fk_tb_funcionario_tb_lotacao1_idx")
+  @@index([id_pessoa_fisica], map: "fk_tb_funcionario_tb_pessoa_fisica1_idx")
+}
+
+model tb_menu {
+  id_menu       BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  nome          String         @db.VarChar(45)
+  link          String         @db.VarChar(45)
+  icone         String?        @db.VarChar(45)
+  exact         Int            @default(0) @db.TinyInt
+  parent_menu   BigInt?        @db.UnsignedBigInt
+  tb_menu       tb_menu?       @relation("tb_menuTotb_menu", fields: [parent_menu], references: [id_menu], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_menu_tb_menu1")
+  other_tb_menu tb_menu[]      @relation("tb_menuTotb_menu")
+  tb_menu_role  tb_menu_role[]
+
+  @@index([parent_menu], map: "fk_tb_menu_tb_menu1_idx")
+}
+
+model tb_menu_role {
+  id_menu BigInt  @db.UnsignedBigInt
+  id_role BigInt  @db.UnsignedBigInt
+  tb_menu tb_menu @relation(fields: [id_menu], references: [id_menu], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_menu_has_tb_role_tb_menu1")
+  tb_role tb_role @relation(fields: [id_role], references: [id_role], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_menu_has_tb_role_tb_role1")
+
+  @@id([id_menu, id_role])
+  @@index([id_menu], map: "fk_tb_menu_has_tb_role_tb_menu1_idx")
+  @@index([id_role], map: "fk_tb_menu_has_tb_role_tb_role1_idx")
+}
+
+model tb_movimento {
+  id_movimento     BigInt         @id @default(autoincrement())
+  id_agendamento   BigInt         @db.UnsignedBigInt
+  descricao        String         @db.VarChar(90)
+  data_criacao     DateTime       @default(now()) @db.DateTime(0)
+  data_modificacao DateTime?      @db.DateTime(0)
+  created_by       BigInt?        @db.UnsignedBigInt
+  tb_agendamento   tb_agendamento @relation(fields: [id_agendamento], references: [id_agendamento], onDelete: Cascade, onUpdate: NoAction, map: "fk_tb_movimento_tb_agendamento1")
+  tb_usuario       tb_usuario?    @relation(fields: [created_by], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_movimento_tb_usuario1")
+
+  @@index([id_agendamento], map: "fk_tb_movimento_tb_agendamento1_idx")
+  @@index([created_by], map: "fk_tb_movimento_tb_usuario1_idx")
+}
+
+model tb_parceiro {
+  id_parceiro              BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  nome                     String                     @db.VarChar(150)
+  imagem                   String?                    @db.VarChar(255)
+  banco                    String                     @db.VarChar(45)
+  agencia                  String                     @db.VarChar(10)
+  conta                    String                     @db.VarChar(20)
+  chave_pix                String?                    @db.VarChar(100)
+  telefone                 String                     @db.VarChar(15)
+  horario_funcionamento    String                     @db.VarChar(45)
+  ciclo_pagamento          Int                        @db.UnsignedTinyInt
+  data_fechamento_ciclo    DateTime?                  @db.Date
+  status                   Int                        @default(1) @db.TinyInt
+  data_criacao             DateTime                   @default(now()) @db.DateTime(0)
+  data_modificacao         DateTime?                  @db.DateTime(0)
+  id_pessoa                BigInt                     @unique(map: "id_pessoa_UNIQUE") @db.UnsignedBigInt
+  id_endereco              BigInt                     @db.UnsignedBigInt
+  created_by               BigInt                     @db.UnsignedBigInt
+  tb_agendamento           tb_agendamento[]
+  tb_financeiro            tb_financeiro[]
+  tb_endereco              tb_endereco                @relation(fields: [id_endereco], references: [id_endereco], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_parceiro_tb_endereco1")
+  tb_pessoa                tb_pessoa                  @relation(fields: [id_pessoa], references: [id_pessoa], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_parceiro_tb_pessoa1")
+  tb_usuario               tb_usuario                 @relation(fields: [created_by], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_parceiro_tb_usuario1")
+  tb_parceiro_documento    tb_parceiro_documento[]
+  tb_parceiro_procedimento tb_parceiro_procedimento[]
+
+  @@index([id_endereco], map: "fk_tb_parceiro_tb_endereco1_idx")
+  @@index([id_pessoa], map: "fk_tb_parceiro_tb_pessoa1_idx")
+  @@index([created_by], map: "fk_tb_parceiro_tb_usuario1_idx")
+}
+
+model tb_parceiro_documento {
+  id_parceiro  BigInt       @db.UnsignedBigInt
+  id_documento BigInt       @db.UnsignedBigInt
+  tb_parceiro  tb_parceiro  @relation(fields: [id_parceiro], references: [id_parceiro], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_documento_has_tb_parceiro1")
+  tb_documento tb_documento @relation(fields: [id_documento], references: [id_documento], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_parceiro_has_tb_documento1")
+
+  @@id([id_parceiro, id_documento])
+  @@index([id_parceiro], map: "fk_tb_parceiro_documento_tb_parceiro1_idx")
+  @@index([id_documento], map: "fk_tb_parceiro_has_tb_documento_tb_documento1_idx")
+}
+
+model tb_parceiro_procedimento {
+  id_parceiro_procedimento    BigInt                        @id @default(autoincrement()) @db.UnsignedBigInt
+  nome                        String?                       @db.VarChar(255)
+  observacao                  String?                       @db.VarChar(255)
+  comissao                    Decimal                       @db.Decimal(9, 2)
+  valor_parceiro              Decimal                       @db.Decimal(9, 2)
+  valor_total                 Decimal                       @db.Decimal(9, 2)
+  horario_atendimento         String?                       @db.VarChar(90)
+  status                      Int                           @default(1) @db.TinyInt
+  data_criacao                DateTime                      @default(now()) @db.DateTime(0)
+  data_modificacao            DateTime?                     @db.DateTime(0)
+  id_parceiro                 BigInt                        @db.UnsignedBigInt
+  id_procedimento             Int                           @db.UnsignedInt
+  tb_agendamento_procedimento tb_agendamento_procedimento[]
+  tb_parceiro                 tb_parceiro                   @relation(fields: [id_parceiro], references: [id_parceiro], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_parceiro_procedimento_tb_parceiro1")
+  tb_procedimento             tb_procedimento               @relation(fields: [id_procedimento], references: [id_procedimento], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_parceiro_procedimento_tb_procedimento1")
+
+  @@index([id_parceiro], map: "fk_tb_parceiro_procedimento_tb_parceiro1_idx")
+  @@index([id_procedimento], map: "fk_tb_parceiro_procedimento_tb_procedimento1_idx")
+}
+
+model tb_pessoa {
+  id_pessoa          BigInt              @id @unique(map: "id_pessoa_UNIQUE") @default(autoincrement()) @db.UnsignedBigInt
+  pessoa_juridica    Boolean
+  tb_parceiro        tb_parceiro?
+  tb_pessoa_fisica   tb_pessoa_fisica[]
+  tb_pessoa_juridica tb_pessoa_juridica?
+  tb_usuario         tb_usuario?
+}
+
+model tb_pessoa_fisica {
+  id_pessoa_fisica BigInt           @id @unique(map: "idtb_pessoa_fisica_UNIQUE") @default(autoincrement()) @db.UnsignedBigInt
+  nome             String           @db.VarChar(100)
+  nome_social      String?          @db.VarChar(100)
+  sexo             Boolean
+  data_nascimento  DateTime         @db.Date
+  cpf              String           @unique(map: "cpf_UNIQUE") @db.VarChar(14)
+  rg               String?          @db.VarChar(45)
+  telefone         String           @db.VarChar(15)
+  telefone2        String?          @db.VarChar(15)
+  email            String?          @db.VarChar(90)
+  pai              String?          @db.VarChar(100)
+  mae              String?          @db.VarChar(100)
+  responsavel      String?          @db.VarChar(100)
+  data_criacao     DateTime         @default(now()) @db.DateTime(0)
+  data_modificacao DateTime?        @db.DateTime(0)
+  id_pessoa        BigInt           @db.UnsignedBigInt
+  tb_cliente       tb_cliente[]
+  tb_funcionario   tb_funcionario[]
+  tb_pessoa        tb_pessoa        @relation(fields: [id_pessoa], references: [id_pessoa], onDelete: Cascade, onUpdate: NoAction, map: "fk_tb_pessoa_fisica_tb_pessoa1")
+
+  @@index([id_pessoa], map: "fk_tb_pessoa_fisica_tb_pessoa1_idx")
+}
+
+model tb_pessoa_juridica {
+  id_pessoa_juridica   BigInt       @id @unique(map: "id_pessoa_juridica_UNIQUE") @default(autoincrement()) @db.UnsignedBigInt
+  razao_social         String       @db.VarChar(150)
+  nome_fantasia        String       @db.VarChar(150)
+  cnpj                 String       @unique(map: "cnpj_UNIQUE") @db.VarChar(20)
+  telefone             String       @db.VarChar(15)
+  telefone2            String?      @db.VarChar(15)
+  email                String       @db.VarChar(90)
+  nome_responsavel     String       @db.VarChar(100)
+  cpf_responsavel      String       @db.VarChar(14)
+  telefone_responsavel String       @db.VarChar(15)
+  email_responsavel    String       @db.VarChar(90)
+  data_criacao         DateTime     @default(now()) @db.DateTime(0)
+  data_modificacao     DateTime?    @db.DateTime(0)
+  id_pessoa            BigInt       @unique(map: "id_pessoa_UNIQUE") @db.UnsignedBigInt
+  tb_pessoa            tb_pessoa    @relation(fields: [id_pessoa], references: [id_pessoa], onDelete: Cascade, onUpdate: NoAction, map: "fk_tb_pessoa_juridica_tb_pessoa1")
+  tb_unidade           tb_unidade[]
+
+  @@index([id_pessoa], map: "fk_tb_pessoa_juridica_tb_pessoa1_idx")
+}
+
+model tb_procedimento {
+  id_procedimento          Int                        @id @default(autoincrement()) @db.UnsignedInt
+  nome                     String                     @db.VarChar(255)
+  descricao                String?                    @db.VarChar(255)
+  tipo                     tb_procedimento_tipo
+  codigo_tuss              Int                        @db.UnsignedInt
+  codigo_especialidade     Int?                       @db.UnsignedInt
+  tb_parceiro_procedimento tb_parceiro_procedimento[]
+  tb_especialidade         tb_especialidade?          @relation(fields: [codigo_especialidade], references: [codigo_especialidade], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_procedimento_tb_especialidade1")
+  tb_tuss                  tb_tuss                    @relation(fields: [codigo_tuss], references: [codigo_tuss], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_procedimento_tb_tuss1")
+
+  @@index([codigo_especialidade], map: "fk_tb_procedimento_tb_especialidade1_idx")
+  @@index([codigo_tuss], map: "fk_tb_procedimento_tb_tuss1_idx")
+}
+
+model tb_representante {
+  id_representante           BigInt                       @id @default(autoincrement()) @db.UnsignedBigInt
+  nome                       String                       @db.VarChar(150)
+  cpf                        String?                      @unique(map: "cpf_UNIQUE") @db.VarChar(11)
+  telefones                  String?                      @db.VarChar(60)
+  banco                      String?                      @db.VarChar(45)
+  agencia                    String?                      @db.VarChar(10)
+  conta                      String?                      @db.VarChar(20)
+  chave_pix                  String?                      @db.VarChar(100)
+  tb_agendamento             tb_agendamento[]
+  tb_representante_pagamento tb_representante_pagamento[]
+}
+
+model tb_representante_pagamento {
+  id_representante_pagamento BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  data_criacao               DateTime         @default(now()) @db.DateTime(0)
+  id_representante           BigInt           @db.UnsignedBigInt
+  created_by                 BigInt           @db.UnsignedBigInt
+  tb_agendamento             tb_agendamento[]
+  tb_representante           tb_representante @relation(fields: [id_representante], references: [id_representante], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_representante_pagamento_tb_representante1")
+  tb_usuario                 tb_usuario       @relation(fields: [created_by], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_representante_pagamento_tb_usuario1")
+
+  @@index([id_representante], map: "fk_tb_representante_pagamento_tb_representante1_idx")
+  @@index([created_by], map: "fk_tb_representante_pagamento_tb_usuario1_idx")
+}
+
+model tb_reseta_senha {
+  id_usuario BigInt     @id @unique(map: "id_usuario_UNIQUE") @db.UnsignedBigInt
+  hash       String     @db.VarChar(45)
+  created_at DateTime?  @default(now()) @db.DateTime(0)
+  tb_usuario tb_usuario @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_reseta_senha_tb_usuario1")
+}
+
+model tb_role {
+  id_role      BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  nome         String         @db.VarChar(25)
+  level        Int
+  keys         keys[]
+  tb_menu_role tb_menu_role[]
+  tb_usuario   tb_usuario[]
+}
+
+model tb_tuss {
+  codigo_tuss     Int               @id @unique(map: "codigo_UNIQUE") @db.UnsignedInt
+  nome            String            @db.VarChar(255)
+  tb_procedimento tb_procedimento[]
+}
+
+model tb_unidade {
+  id_unidade         BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  label              String             @db.VarChar(90)
+  id_endereco        BigInt             @db.UnsignedBigInt
+  id_pessoa_juridica BigInt             @db.UnsignedBigInt
+  tb_funcionario     tb_funcionario[]
+  tb_endereco        tb_endereco        @relation(fields: [id_endereco], references: [id_endereco], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_unidade_tb_endereco1")
+  tb_pessoa_juridica tb_pessoa_juridica @relation(fields: [id_pessoa_juridica], references: [id_pessoa_juridica], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_unidade_tb_pessoa_juridica1")
+
+  @@index([id_endereco], map: "fk_tb_unidade_tb_endereco1_idx")
+  @@index([id_pessoa_juridica], map: "fk_tb_unidade_tb_pessoa_juridica1_idx")
+}
+
+model tb_usuario {
+  id_usuario                                            BigInt                       @id @default(autoincrement()) @db.UnsignedBigInt
+  email                                                 String                       @unique(map: "email_UNIQUE") @db.VarChar(90)
+  senha                                                 String                       @db.VarChar(40)
+  status                                                Int                          @default(1) @db.TinyInt
+  ultimo_acesso                                         DateTime?                    @db.DateTime(0)
+  data_criacao                                          DateTime                     @default(now()) @db.DateTime(0)
+  data_modificacao                                      DateTime?                    @db.DateTime(0)
+  id_pessoa                                             BigInt?                      @unique(map: "id_pessoa_UNIQUE") @db.UnsignedBigInt
+  id_role                                               BigInt                       @db.UnsignedBigInt
+  keys                                                  keys[]
+  tb_agendamento_tb_agendamento_created_byTotb_usuario  tb_agendamento[]             @relation("tb_agendamento_created_byTotb_usuario")
+  tb_agendamento_tb_agendamento_modified_byTotb_usuario tb_agendamento[]             @relation("tb_agendamento_modified_byTotb_usuario")
+  tb_caixa                                              tb_caixa[]
+  tb_cliente                                            tb_cliente[]
+  tb_financeiro                                         tb_financeiro[]
+  tb_movimento                                          tb_movimento[]
+  tb_parceiro                                           tb_parceiro[]
+  tb_representante_pagamento                            tb_representante_pagamento[]
+  tb_reseta_senha                                       tb_reseta_senha?
+  tb_pessoa                                             tb_pessoa?                   @relation(fields: [id_pessoa], references: [id_pessoa], onDelete: Cascade, onUpdate: NoAction, map: "fk_tb_usuario_tb_pessoa1")
+  tb_role                                               tb_role                      @relation(fields: [id_role], references: [id_role], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_usuario_tb_role1")
+
+  @@index([id_pessoa], map: "fk_tb_usuario_tb_pessoa1_idx")
+  @@index([id_role], map: "fk_tb_usuario_tb_role1_idx")
+}
+
+enum tb_agendamento_pagamento_tipo {
+  entrada
+  saida
+}
+
+enum tb_agendamento_status {
+  pendente
+  cancelado
+  realizado
+  aguardando_pagamento @map("aguardando pagamento")
+  pago
+}
+
+enum tb_financeiro_status {
+  processando
+  pendente
+  pago
+  cancelado
+}
+
+enum tb_procedimento_tipo {
+  consulta
+  exame
+  procedimento
+}
