@@ -132,6 +132,7 @@ import relatorioRoutes from './routes/relatorios.js';
 import representanteRoutes from './routes/representantes.js';
 import usuarioRoutes from './routes/usuarios.js';
 import parceiroPortalRoutes from './routes/parceiro-portal.js';
+import unitsRoutes from './routes/unidades.js';
 
 fastify.register(agendamentoRoutes);
 fastify.register(financeiroRoutes);
@@ -145,6 +146,7 @@ fastify.register(relatorioRoutes);
 fastify.register(representanteRoutes);
 fastify.register(usuarioRoutes);
 fastify.register(parceiroPortalRoutes);
+fastify.register(unitsRoutes);
 
 const start = async () => {
   try {

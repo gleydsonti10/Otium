@@ -22,6 +22,31 @@ export default async function caixaRoutes(fastify: FastifyInstance) {
         whereClause.id_usuario = BigInt(user.id_usuario);
       }
 
+      const activeUnitIdHeader = request.headers['x-active-unit-id'];
+      if (activeUnitIdHeader) {
+        const activeUnitId = BigInt(activeUnitIdHeader as string);
+        whereClause.tb_usuario = {
+          tb_pessoa: {
+            tb_pessoa_fisica: {
+              some: {
+                tb_funcionario: {
+                  some: {
+                    OR: [
+                      { id_unidade: activeUnitId },
+                      {
+                        tb_funcionario_unidade: {
+                          some: { id_unidade: activeUnitId }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        };
+      }
+
       const caixas = await prisma.tb_caixa.findMany({
         where: whereClause,
         orderBy: { data_abertura: 'desc' },

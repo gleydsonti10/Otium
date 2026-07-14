@@ -21,7 +21,12 @@ export default async function funcionarioRoutes(fastify: FastifyInstance) {
       const employees = await prisma.tb_funcionario.findMany({
         include: {
           tb_pessoa_fisica: true,
-          tb_unidade: true
+          tb_unidade: true,
+          tb_funcionario_unidade: {
+            include: {
+              tb_unidade: true
+            }
+          }
         },
         orderBy: {
           tb_pessoa_fisica: {
@@ -34,6 +39,14 @@ export default async function funcionarioRoutes(fastify: FastifyInstance) {
         id_funcionario: e.id_funcionario.toString(),
         id_unidade: e.id_unidade.toString(),
         unidade_label: e.tb_unidade.label,
+        unidades_ids: [
+          e.id_unidade.toString(),
+          ...e.tb_funcionario_unidade.map(fu => fu.id_unidade.toString())
+        ].filter((value, index, self) => self.indexOf(value) === index),
+        unidades_adicionais: e.tb_funcionario_unidade.map(fu => ({
+          id_unidade: fu.id_unidade.toString(),
+          label: fu.tb_unidade.label
+        })),
         id_pessoa_fisica: e.id_pessoa_fisica.toString(),
         nome: e.tb_pessoa_fisica.nome,
         nome_social: e.tb_pessoa_fisica.nome_social,
@@ -54,30 +67,19 @@ export default async function funcionarioRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // GET /api/unidades - List all units for select dropdowns
-  fastify.get('/api/unidades', async (request, reply) => {
-    try {
-      const units = await prisma.tb_unidade.findMany({
-        orderBy: { label: 'asc' }
-      });
 
-      return units.map((u) => ({
-        id_unidade: u.id_unidade.toString(),
-        label: u.label
-      }));
-    } catch (error: any) {
-      fastify.log.error(error);
-      return reply.status(500).send({ error: 'Erro ao buscar unidades.' });
-    }
-  });
 
   // POST /api/funcionarios - Create new employee
   fastify.post('/api/funcionarios', async (request, reply) => {
     try {
       const data = request.body as any;
 
-      if (!data.nome || !data.cpf || !data.telefone || !data.id_unidade || !data.data_nascimento) {
-        return reply.status(400).send({ error: 'Campos obrigatórios ausentes.' });
+      const unidadesIds: string[] = Array.isArray(data.unidades_ids) && data.unidades_ids.length > 0
+        ? data.unidades_ids
+        : (data.id_unidade ? [data.id_unidade.toString()] : []);
+
+      if (!data.nome || !data.cpf || !data.telefone || unidadesIds.length === 0 || !data.data_nascimento) {
+        return reply.status(400).send({ error: 'Campos obrigatórios ausentes. Associe pelo menos uma unidade.' });
       }
 
       // Check if CPF already exists
@@ -121,8 +123,16 @@ export default async function funcionarioRoutes(fastify: FastifyInstance) {
         const func = await tx.tb_funcionario.create({
           data: {
             id_pessoa_fisica: pf.id_pessoa_fisica,
-            id_unidade: BigInt(data.id_unidade)
+            id_unidade: BigInt(unidadesIds[0])
           }
+        });
+
+        // 4. Create tb_funcionario_unidade mappings
+        await tx.tb_funcionario_unidade.createMany({
+          data: unidadesIds.map((uid: string) => ({
+            id_funcionario: func.id_funcionario,
+            id_unidade: BigInt(uid)
+          }))
         });
 
         return func;
@@ -152,6 +162,10 @@ export default async function funcionarioRoutes(fastify: FastifyInstance) {
         return reply.status(404).send({ error: 'Funcionário não encontrado.' });
       }
 
+      const unidadesIds: string[] = Array.isArray(data.unidades_ids) && data.unidades_ids.length > 0
+        ? data.unidades_ids
+        : (data.id_unidade ? [data.id_unidade.toString()] : []);
+
       await prisma.$transaction(async (tx) => {
         // 1. Update tb_pessoa_fisica
         await tx.tb_pessoa_fisica.update({
@@ -171,13 +185,26 @@ export default async function funcionarioRoutes(fastify: FastifyInstance) {
           }
         });
 
-        // 2. Update tb_funcionario (unit)
-        if (data.id_unidade) {
+        // 2. Update tb_funcionario (primary unit)
+        if (unidadesIds.length > 0) {
           await tx.tb_funcionario.update({
             where: { id_funcionario: employee.id_funcionario },
             data: {
-              id_unidade: BigInt(data.id_unidade)
+              id_unidade: BigInt(unidadesIds[0])
             }
+          });
+
+          // Delete existing unit mappings
+          await tx.tb_funcionario_unidade.deleteMany({
+            where: { id_funcionario: employee.id_funcionario }
+          });
+
+          // Insert new unit mappings
+          await tx.tb_funcionario_unidade.createMany({
+            data: unidadesIds.map((uid: string) => ({
+              id_funcionario: employee.id_funcionario,
+              id_unidade: BigInt(uid)
+            }))
           });
         }
       });

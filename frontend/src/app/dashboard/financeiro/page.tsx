@@ -51,9 +51,11 @@ export default function FinanceiroPage() {
   const fetchCycles = async () => {
     try {
       const token = localStorage.getItem('token');
+      const activeUnitId = localStorage.getItem('activeUnitId');
       const response = await fetch('http://localhost:3000/api/financeiro', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          ...(activeUnitId ? { 'x-active-unit-id': activeUnitId } : {})
         }
       });
       const data = await response.json();
@@ -74,9 +76,11 @@ export default function FinanceiroPage() {
     setLoadingPreviews(true);
     try {
       const token = localStorage.getItem('token');
+      const activeUnitId = localStorage.getItem('activeUnitId');
       const response = await fetch('http://localhost:3000/api/financeiro/previa-ciclos', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          ...(activeUnitId ? { 'x-active-unit-id': activeUnitId } : {})
         }
       });
       const data = await response.json();
@@ -115,9 +119,11 @@ export default function FinanceiroPage() {
 
     try {
       const token = localStorage.getItem('token');
+      const activeUnitId = localStorage.getItem('activeUnitId');
       const response = await fetch(`http://localhost:3000/api/financeiro/${id}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          ...(activeUnitId ? { 'x-active-unit-id': activeUnitId } : {})
         }
       });
       const data = await response.json();
@@ -146,11 +152,13 @@ export default function FinanceiroPage() {
       setGeneratingBatch(idParceiro || 'mass');
       try {
         const token = localStorage.getItem('token');
+        const activeUnitId = localStorage.getItem('activeUnitId');
         const response = await fetch('http://localhost:3000/api/financeiro/gerar-lote', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            ...(activeUnitId ? { 'x-active-unit-id': activeUnitId } : {})
           },
           body: JSON.stringify({ id_parceiro: idParceiro })
         });

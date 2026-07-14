@@ -20,6 +20,35 @@ export default async function financeiroRoutes(fastify: FastifyInstance) {
 
       const whereClause: Prisma.tb_financeiroWhereInput = {};
 
+      const activeUnitIdHeader = request.headers['x-active-unit-id'];
+      if (activeUnitIdHeader) {
+        const activeUnitId = BigInt(activeUnitIdHeader as string);
+        whereClause.tb_agendamento = {
+          some: {
+            tb_usuario_tb_agendamento_created_byTotb_usuario: {
+              tb_pessoa: {
+                tb_pessoa_fisica: {
+                  some: {
+                    tb_funcionario: {
+                      some: {
+                        OR: [
+                          { id_unidade: activeUnitId },
+                          {
+                            tb_funcionario_unidade: {
+                              some: { id_unidade: activeUnitId }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        };
+      }
+
       // If user level is below 5, restrict to their own partner id
       if (level < 5) {
         const partnerUser = await prisma.tb_parceiro.findFirst({
@@ -186,15 +215,42 @@ export default async function financeiroRoutes(fastify: FastifyInstance) {
         return reply.status(403).send({ error: 'Acesso negado: Nível insuficiente' });
       }
 
+      const activeUnitIdHeader = request.headers['x-active-unit-id'];
+      const appointmentFilter: Prisma.tb_agendamentoWhereInput = {
+        status: 'realizado',
+        id_financeiro: null
+      };
+
+      if (activeUnitIdHeader) {
+        const activeUnitId = BigInt(activeUnitIdHeader as string);
+        appointmentFilter.tb_usuario_tb_agendamento_created_byTotb_usuario = {
+          tb_pessoa: {
+            tb_pessoa_fisica: {
+              some: {
+                tb_funcionario: {
+                  some: {
+                    OR: [
+                      { id_unidade: activeUnitId },
+                      {
+                        tb_funcionario_unidade: {
+                          some: { id_unidade: activeUnitId }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        };
+      }
+
       // Fetch all active partners with their completed appointments that don't belong to a batch
       const partners = await prisma.tb_parceiro.findMany({
         where: { status: 1 },
         include: {
           tb_agendamento: {
-            where: {
-              status: 'realizado',
-              id_financeiro: null
-            },
+            where: appointmentFilter,
             include: {
               tb_agendamento_procedimento: {
                 include: {
@@ -245,6 +301,31 @@ export default async function financeiroRoutes(fastify: FastifyInstance) {
       }
 
       const { id_parceiro, data_limite } = request.body as any;
+      const activeUnitIdHeader = request.headers['x-active-unit-id'];
+      const unitWhereClause: any = {};
+      if (activeUnitIdHeader) {
+        const activeUnitId = BigInt(activeUnitIdHeader as string);
+        unitWhereClause.tb_usuario_tb_agendamento_created_byTotb_usuario = {
+          tb_pessoa: {
+            tb_pessoa_fisica: {
+              some: {
+                tb_funcionario: {
+                  some: {
+                    OR: [
+                      { id_unidade: activeUnitId },
+                      {
+                        tb_funcionario_unidade: {
+                          some: { id_unidade: activeUnitId }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        };
+      }
 
       if (id_parceiro) {
         // Individual generation for one partner
@@ -265,7 +346,8 @@ export default async function financeiroRoutes(fastify: FastifyInstance) {
             id_parceiro: partner.id_parceiro,
             status: 'realizado',
             id_financeiro: null,
-            data_realizacao: { lte: cutOffDate }
+            data_realizacao: { lte: cutOffDate },
+            ...unitWhereClause
           }
         });
 
@@ -326,7 +408,8 @@ export default async function financeiroRoutes(fastify: FastifyInstance) {
               id_parceiro: partner.id_parceiro,
               status: 'realizado',
               id_financeiro: null,
-              data_realizacao: { lte: cutOffDate }
+              data_realizacao: { lte: cutOffDate },
+              ...unitWhereClause
             }
           });
 

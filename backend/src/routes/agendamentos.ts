@@ -37,6 +37,32 @@ export default async function agendamentoRoutes(fastify: FastifyInstance) {
       // Base query filters
       const whereClause: Prisma.tb_agendamentoWhereInput = {};
 
+      // Active unit scope filtering
+      const activeUnitIdHeader = request.headers['x-active-unit-id'];
+      if (activeUnitIdHeader) {
+        const activeUnitId = BigInt(activeUnitIdHeader as string);
+        whereClause.tb_usuario_tb_agendamento_created_byTotb_usuario = {
+          tb_pessoa: {
+            tb_pessoa_fisica: {
+              some: {
+                tb_funcionario: {
+                  some: {
+                    OR: [
+                      { id_unidade: activeUnitId },
+                      {
+                        tb_funcionario_unidade: {
+                          some: { id_unidade: activeUnitId }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        };
+      }
+
       // If user level is below 5 (e.g. Partner/Doctor level 4), restrict results to their own partner id
       if (level < 5) {
         // Query to find partner associated with user

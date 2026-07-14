@@ -41,8 +41,12 @@ export default function CaixaPage() {
   const fetchHistory = async () => {
     try {
       const token = localStorage.getItem('token');
+      const activeUnitId = localStorage.getItem('activeUnitId');
       const response = await fetch('http://localhost:3000/api/caixa', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          ...(activeUnitId ? { 'x-active-unit-id': activeUnitId } : {})
+        }
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Erro ao carregar histórico.');

@@ -44,12 +44,14 @@ export default function DashboardPage() {
   const [adicionalCartao, setAdicionalCartao] = useState<string>('0');
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const activeUnitId = typeof window !== 'undefined' ? localStorage.getItem('activeUnitId') : null;
 
   const fetchAgendamentos = async () => {
     try {
       const response = await fetch('http://localhost:3000/api/agendamentos', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          ...(activeUnitId ? { 'x-active-unit-id': activeUnitId } : {})
         }
       });
       const data = await response.json();

@@ -53,6 +53,7 @@ export default function RelatoriosPage() {
 
     try {
       const token = localStorage.getItem('token');
+      const activeUnitId = localStorage.getItem('activeUnitId');
       
       // Build query string
       const params = new URLSearchParams();
@@ -70,7 +71,10 @@ export default function RelatoriosPage() {
       };
 
       const response = await fetch(`http://localhost:3000/api/relatorios/${endpointMap[activeTab]}?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          ...(activeUnitId ? { 'x-active-unit-id': activeUnitId } : {})
+        }
       });
 
       const data = await response.json();

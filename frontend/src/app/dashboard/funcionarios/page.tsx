@@ -30,7 +30,7 @@ export default function FuncionariosPage() {
   const [pai, setPai] = useState('');
   const [mae, setMae] = useState('');
   const [responsavel, setResponsavel] = useState('');
-  const [idUnidade, setIdUnidade] = useState('');
+  const [selectedUnidades, setSelectedUnidades] = useState<string[]>([]);
 
   const fetchEmployees = async () => {
     try {
@@ -85,7 +85,7 @@ export default function FuncionariosPage() {
     setPai('');
     setMae('');
     setResponsavel('');
-    setIdUnidade(units[0]?.id_unidade || '');
+    setSelectedUnidades(units[0] ? [units[0].id_unidade] : []);
     setShowFormModal(true);
   };
 
@@ -105,7 +105,7 @@ export default function FuncionariosPage() {
     setPai(e.pai || '');
     setMae(e.mae || '');
     setResponsavel(e.responsavel || '');
-    setIdUnidade(e.id_unidade);
+    setSelectedUnidades(e.unidades_ids || [e.id_unidade]);
     setShowFormModal(true);
   };
 
@@ -113,6 +113,11 @@ export default function FuncionariosPage() {
     e.preventDefault();
     setErrorMsg('');
     const token = localStorage.getItem('token');
+
+    if (selectedUnidades.length === 0) {
+      setErrorMsg('Por favor, selecione pelo menos uma unidade para o funcionário.');
+      return;
+    }
 
     const payload = {
       nome,
@@ -127,7 +132,7 @@ export default function FuncionariosPage() {
       pai,
       mae,
       responsavel,
-      id_unidade: idUnidade
+      unidades_ids: selectedUnidades
     };
 
     try {
@@ -390,19 +395,41 @@ export default function FuncionariosPage() {
                   />
                 </div>
 
-                <div className="flex flex-col space-y-1.5">
-                  <label className="text-slate-300 text-xs font-semibold uppercase">Lotação (Unidade)</label>
-                  <select
-                    value={idUnidade}
-                    onChange={(e) => setIdUnidade(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-emerald-500 text-sm font-medium"
-                  >
-                    {units.map((u) => (
-                      <option key={u.id_unidade} value={u.id_unidade}>
-                        {u.label}
-                      </option>
-                    ))}
-                  </select>
+                <div className="flex flex-col space-y-2 md:col-span-2">
+                  <label className="text-slate-300 text-xs font-semibold uppercase">Unidades Associadas *</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    {units.map((u) => {
+                      const isChecked = selectedUnidades.includes(u.id_unidade);
+                      return (
+                        <label
+                          key={u.id_unidade}
+                          className={`flex items-center space-x-2.5 px-3 py-2 rounded-lg border transition-all cursor-pointer select-none ${
+                            isChecked
+                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-semibold'
+                              : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:text-slate-300 hover:border-slate-700/50'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => {
+                              if (isChecked) {
+                                if (selectedUnidades.length > 1) {
+                                  setSelectedUnidades(selectedUnidades.filter((id) => id !== u.id_unidade));
+                                } else {
+                                  alert("O funcionário deve estar associado a pelo menos uma unidade.");
+                                }
+                              } else {
+                                setSelectedUnidades([...selectedUnidades, u.id_unidade]);
+                              }
+                            }}
+                            className="w-4 h-4 rounded border-slate-800 text-emerald-500 focus:ring-emerald-500 bg-slate-950 accent-emerald-500 cursor-pointer"
+                          />
+                          <span className="text-sm truncate">{u.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4 md:col-span-2">
@@ -493,8 +520,28 @@ export default function FuncionariosPage() {
                   )}
 
                   <div>
-                    <span className="text-slate-500 block text-xs font-semibold uppercase">Unidade de Lotação</span>
-                    <span className="text-emerald-400 font-bold block mt-1">{selectedEmp.unidade_label}</span>
+                    <span className="text-slate-500 block text-xs font-semibold uppercase">Unidades Associadas</span>
+                    <div className="flex flex-wrap gap-2 mt-1.5">
+                      {selectedEmp.unidades_adicionais && selectedEmp.unidades_adicionais.length > 0 ? (
+                        [
+                          { id_unidade: selectedEmp.id_unidade, label: selectedEmp.unidade_label },
+                          ...selectedEmp.unidades_adicionais
+                        ]
+                        .filter((u, index, self) => self.findIndex(t => t.id_unidade === u.id_unidade) === index)
+                        .map((u: any) => (
+                          <span
+                            key={u.id_unidade}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-500/10"
+                          >
+                            🏬 {u.label}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-500/10">
+                          🏬 {selectedEmp.unidade_label}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

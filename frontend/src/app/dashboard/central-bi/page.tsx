@@ -48,6 +48,12 @@ export default function CentralBIPage() {
     setErrorMsg('');
     try {
       const token = localStorage.getItem('token');
+      const activeUnitId = localStorage.getItem('activeUnitId');
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        ...(activeUnitId ? { 'x-active-unit-id': activeUnitId } : {})
+      };
+      
       const params = new URLSearchParams();
       if (dataInicial) params.append('data_inicial', dataInicial);
       if (dataFinal) params.append('data_final', dataFinal);
@@ -55,21 +61,21 @@ export default function CentralBIPage() {
 
       // 1. Fetch Appointments Report
       const resAgendamento = await fetch(`http://localhost:3000/api/relatorios/agendamento?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers
       });
       const dataAgendamento = await resAgendamento.json();
       if (!resAgendamento.ok) throw new Error(dataAgendamento.error || 'Erro ao carregar dados de agendamentos.');
 
       // 2. Fetch Partners Report
       const resParceiro = await fetch(`http://localhost:3000/api/relatorios/parceiro?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers
       });
       const dataParceiro = await resParceiro.json();
       if (!resParceiro.ok) throw new Error(dataParceiro.error || 'Erro ao carregar dados de parceiros.');
 
       // 3. Fetch Procedures Report
       const resProcedimento = await fetch(`http://localhost:3000/api/relatorios/procedimento?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers
       });
       const dataProcedimento = await resProcedimento.json();
       if (!resProcedimento.ok) throw new Error(dataProcedimento.error || 'Erro ao carregar dados de procedimentos.');

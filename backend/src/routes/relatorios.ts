@@ -19,6 +19,23 @@ export default async function relatorioRoutes(fastify: FastifyInstance) {
   fastify.get('/api/relatorios/agendamento', async (request, reply) => {
     try {
       const { data_inicial, data_final, status, parceiro } = request.query as any;
+      const activeUnitIdHeader = request.headers['x-active-unit-id'];
+
+      let unitJoin = '';
+      let unitWhere = '';
+      if (activeUnitIdHeader) {
+        const activeUnitId = Number(activeUnitIdHeader);
+        unitJoin = `
+          INNER JOIN tb_usuario u_unit ON a.created_by = u_unit.id_usuario
+          INNER JOIN tb_pessoa_fisica pf_unit ON u_unit.id_pessoa = pf_unit.id_pessoa
+          INNER JOIN tb_funcionario f_unit ON pf_unit.id_pessoa_fisica = f_unit.id_pessoa_fisica
+        `;
+        unitWhere = ` AND (f_unit.id_unidade = ${activeUnitId} OR EXISTS (
+          SELECT 1 FROM tb_funcionario_unidade fu_check 
+          WHERE fu_check.id_funcionario = f_unit.id_funcionario 
+            AND fu_check.id_unidade = ${activeUnitId}
+        ))`;
+      }
 
       let sql = `
         SELECT 
@@ -37,7 +54,8 @@ export default async function relatorioRoutes(fastify: FastifyInstance) {
           INNER JOIN tb_agendamento_procedimento ap ON ap.id_agendamento = a.id_agendamento
           LEFT JOIN tb_parceiro_procedimento pp ON pp.id_parceiro_procedimento = ap.id_parceiro_procedimento
           LEFT JOIN tb_agendamento_pagamento apg ON apg.id_agendamento_pagamento = a.id_agendamento_pagamento
-        WHERE a.status != 'cancelado'
+          ${unitJoin}
+        WHERE a.status != 'cancelado' ${unitWhere}
       `;
 
       if (parceiro) {
@@ -82,6 +100,23 @@ export default async function relatorioRoutes(fastify: FastifyInstance) {
   fastify.get('/api/relatorios/financeiro', async (request, reply) => {
     try {
       const { data_inicial, data_final } = request.query as any;
+      const activeUnitIdHeader = request.headers['x-active-unit-id'];
+
+      let unitJoin = '';
+      let unitWhere = '';
+      if (activeUnitIdHeader) {
+        const activeUnitId = Number(activeUnitIdHeader);
+        unitJoin = `
+          INNER JOIN tb_usuario u_unit ON a.created_by = u_unit.id_usuario
+          INNER JOIN tb_pessoa_fisica pf_unit ON u_unit.id_pessoa = pf_unit.id_pessoa
+          INNER JOIN tb_funcionario f_unit ON pf_unit.id_pessoa_fisica = f_unit.id_pessoa_fisica
+        `;
+        unitWhere = ` AND (f_unit.id_unidade = ${activeUnitId} OR EXISTS (
+          SELECT 1 FROM tb_funcionario_unidade fu_check 
+          WHERE fu_check.id_funcionario = f_unit.id_funcionario 
+            AND fu_check.id_unidade = ${activeUnitId}
+        ))`;
+      }
 
       let sql = `
         SELECT 
@@ -94,7 +129,8 @@ export default async function relatorioRoutes(fastify: FastifyInstance) {
           INNER JOIN tb_agendamento_procedimento ap ON ap.id_agendamento = a.id_agendamento
           LEFT JOIN tb_parceiro_procedimento pp ON pp.id_parceiro_procedimento = ap.id_parceiro_procedimento
           LEFT JOIN tb_financeiro f ON f.id_financeiro = a.id_financeiro
-        WHERE a.status = 'realizado'
+          ${unitJoin}
+        WHERE a.status = 'realizado' ${unitWhere}
       `;
 
       if (data_inicial) {
@@ -124,6 +160,23 @@ export default async function relatorioRoutes(fastify: FastifyInstance) {
   fastify.get('/api/relatorios/parceiro', async (request, reply) => {
     try {
       const { data_inicial, data_final, status, parceiro } = request.query as any;
+      const activeUnitIdHeader = request.headers['x-active-unit-id'];
+
+      let unitJoin = '';
+      let unitWhere = '';
+      if (activeUnitIdHeader) {
+        const activeUnitId = Number(activeUnitIdHeader);
+        unitJoin = `
+          INNER JOIN tb_usuario u_unit ON a.created_by = u_unit.id_usuario
+          INNER JOIN tb_pessoa_fisica pf_unit ON u_unit.id_pessoa = pf_unit.id_pessoa
+          INNER JOIN tb_funcionario f_unit ON pf_unit.id_pessoa_fisica = f_unit.id_pessoa_fisica
+        `;
+        unitWhere = ` AND (f_unit.id_unidade = ${activeUnitId} OR EXISTS (
+          SELECT 1 FROM tb_funcionario_unidade fu_check 
+          WHERE fu_check.id_funcionario = f_unit.id_funcionario 
+            AND fu_check.id_unidade = ${activeUnitId}
+        ))`;
+      }
 
       let sql = `
         SELECT 
@@ -145,7 +198,8 @@ export default async function relatorioRoutes(fastify: FastifyInstance) {
           INNER JOIN tb_agendamento_procedimento ap ON ap.id_agendamento = a.id_agendamento
           LEFT JOIN tb_parceiro_procedimento pp ON pp.id_parceiro_procedimento = ap.id_parceiro_procedimento
           LEFT JOIN tb_agendamento_pagamento apg ON apg.id_agendamento_pagamento = a.id_agendamento_pagamento
-        WHERE a.status != 'cancelado'
+          ${unitJoin}
+        WHERE a.status != 'cancelado' ${unitWhere}
       `;
 
       if (parceiro) {
@@ -192,6 +246,23 @@ export default async function relatorioRoutes(fastify: FastifyInstance) {
   fastify.get('/api/relatorios/procedimento', async (request, reply) => {
     try {
       const { data_inicial, data_final, status, tipo, parceiro } = request.query as any;
+      const activeUnitIdHeader = request.headers['x-active-unit-id'];
+
+      let unitJoin = '';
+      let unitWhere = '';
+      if (activeUnitIdHeader) {
+        const activeUnitId = Number(activeUnitIdHeader);
+        unitJoin = `
+          INNER JOIN tb_usuario u_unit ON a.created_by = u_unit.id_usuario
+          INNER JOIN tb_pessoa_fisica pf_unit ON u_unit.id_pessoa = pf_unit.id_pessoa
+          INNER JOIN tb_funcionario f_unit ON pf_unit.id_pessoa_fisica = f_unit.id_pessoa_fisica
+        `;
+        unitWhere = ` AND (f_unit.id_unidade = ${activeUnitId} OR EXISTS (
+          SELECT 1 FROM tb_funcionario_unidade fu_check 
+          WHERE fu_check.id_funcionario = f_unit.id_funcionario 
+            AND fu_check.id_unidade = ${activeUnitId}
+        ))`;
+      }
 
       let sql = `
         SELECT 
@@ -211,7 +282,8 @@ export default async function relatorioRoutes(fastify: FastifyInstance) {
           INNER JOIN tb_agendamento_procedimento ap ON ap.id_parceiro_procedimento = pp.id_parceiro_procedimento
           INNER JOIN tb_agendamento a ON a.id_agendamento = ap.id_agendamento 
           LEFT JOIN tb_agendamento_pagamento apg ON apg.id_agendamento_pagamento = a.id_agendamento_pagamento
-        WHERE a.status != 'cancelado'
+          ${unitJoin}
+        WHERE a.status != 'cancelado' ${unitWhere}
       `;
 
       if (parceiro) {

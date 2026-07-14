@@ -239,6 +239,7 @@ model tb_funcionario {
   tb_caixa         tb_caixa[]
   tb_pessoa_fisica tb_pessoa_fisica @relation(fields: [id_pessoa_fisica], references: [id_pessoa_fisica], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_funcionario_tb_pessoa_fisica1")
   tb_unidade       tb_unidade       @relation(fields: [id_unidade], references: [id_unidade], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_funcionario_tb_unidade1")
+  tb_funcionario_unidade tb_funcionario_unidade[]
 
   @@index([id_unidade], map: "fk_tb_funcionario_tb_lotacao1_idx")
   @@index([id_pessoa_fisica], map: "fk_tb_funcionario_tb_pessoa_fisica1_idx")
@@ -471,6 +472,7 @@ model tb_unidade {
   tb_funcionario     tb_funcionario[]
   tb_endereco        tb_endereco        @relation(fields: [id_endereco], references: [id_endereco], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_unidade_tb_endereco1")
   tb_pessoa_juridica tb_pessoa_juridica @relation(fields: [id_pessoa_juridica], references: [id_pessoa_juridica], onDelete: NoAction, onUpdate: NoAction, map: "fk_tb_unidade_tb_pessoa_juridica1")
+  tb_funcionario_unidade tb_funcionario_unidade[]
 
   @@index([id_endereco], map: "fk_tb_unidade_tb_endereco1_idx")
   @@index([id_pessoa_juridica], map: "fk_tb_unidade_tb_pessoa_juridica1_idx")
@@ -527,4 +529,15 @@ enum tb_procedimento_tipo {
   consulta
   exame
   procedimento
+}
+
+model tb_funcionario_unidade {
+  id_funcionario BigInt         @db.UnsignedBigInt
+  id_unidade     BigInt         @db.UnsignedBigInt
+  tb_funcionario tb_funcionario @relation(fields: [id_funcionario], references: [id_funcionario], onDelete: Cascade, onUpdate: NoAction, map: "fk_fu_funcionario")
+  tb_unidade     tb_unidade     @relation(fields: [id_unidade], references: [id_unidade], onDelete: Cascade, onUpdate: NoAction, map: "fk_fu_unidade")
+
+  @@id([id_funcionario, id_unidade])
+  @@index([id_funcionario], map: "fk_fu_funcionario_idx")
+  @@index([id_unidade], map: "fk_fu_unidade_idx")
 }
