@@ -41,6 +41,8 @@ export default function LoginPage() {
       setTimeout(() => {
         if (data.user.role.level >= 50) {
           router.push('/dashboard');
+        } else if (data.user.role.level === 1) {
+          router.push('/cliente');
         } else {
           router.push('/parceiro');
         }
@@ -222,8 +224,8 @@ export default function LoginPage() {
           {/* Create account section */}
           <div className="mt-8 text-center text-sm text-slate-500">
             Ainda não tem cadastro?{' '}
-            <a href="#/cadastro" className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">
-              Criar uma conta
+            <a href="/cliente/cadastro" className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">
+              Criar uma conta de cliente
             </a>
           </div>
         </div>

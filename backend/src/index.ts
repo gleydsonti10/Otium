@@ -59,9 +59,9 @@ fastify.post('/api/login', async (request, reply) => {
       return reply.status(401).send({ error: 'E-mail ou senha incorretos' });
     }
 
-    // Verify role authorization level (legacy restriction: level >= 4)
-    if (user.tb_role.level < 4) {
-      return reply.status(403).send({ error: 'Nível de acesso insuficiente para este portal' });
+    // Verify role authorization level (level >= 1 is allowed)
+    if (user.tb_role.level < 1) {
+      return reply.status(403).send({ error: 'Nível de acesso insuficiente' });
     }
 
     // Determine user display name based on person type (physical or legal person)
@@ -75,12 +75,27 @@ fastify.post('/api/login', async (request, reply) => {
     }
 
     let idParceiro: string | null = null;
-    if (user.tb_role.level < 50) {
+    if (user.tb_role.level > 1 && user.tb_role.level < 50) {
       const partner = await prisma.tb_parceiro.findFirst({
         where: { id_pessoa: user.id_pessoa || 0 }
       });
       if (partner) {
         idParceiro = partner.id_parceiro.toString();
+      }
+    }
+
+    // Get id_cliente if the role level is 1 (Cliente)
+    let idCliente: string | null = null;
+    if (user.tb_role.level === 1) {
+      const client = await prisma.tb_cliente.findFirst({
+        where: {
+          tb_pessoa_fisica: {
+            id_pessoa: user.id_pessoa || 0
+          }
+        }
+      });
+      if (client) {
+        idCliente = client.id_cliente.toString();
       }
     }
 
@@ -90,6 +105,7 @@ fastify.post('/api/login', async (request, reply) => {
       email: user.email,
       nome_usuario: nomeUsuario,
       id_parceiro: idParceiro,
+      id_cliente: idCliente,
       id_pessoa: user.id_pessoa?.toString() || null,
       role: {
         id_role: user.tb_role.id_role.toString(),
@@ -108,6 +124,7 @@ fastify.post('/api/login', async (request, reply) => {
         email: user.email,
         nome_usuario: nomeUsuario,
         id_parceiro: idParceiro,
+        id_cliente: idCliente,
         role: {
           nome: user.tb_role.nome,
           level: user.tb_role.level
@@ -133,6 +150,7 @@ import representanteRoutes from './routes/representantes.js';
 import usuarioRoutes from './routes/usuarios.js';
 import parceiroPortalRoutes from './routes/parceiro-portal.js';
 import unitsRoutes from './routes/unidades.js';
+import clientePortalRoutes from './routes/cliente-portal.js';
 
 fastify.register(agendamentoRoutes);
 fastify.register(financeiroRoutes);
@@ -147,6 +165,7 @@ fastify.register(representanteRoutes);
 fastify.register(usuarioRoutes);
 fastify.register(parceiroPortalRoutes);
 fastify.register(unitsRoutes);
+fastify.register(clientePortalRoutes);
 
 const start = async () => {
   try {

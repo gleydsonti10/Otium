@@ -147,6 +147,10 @@ model tb_cidade {
 
 model tb_cliente {
   id_cliente           BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  convenio             String?                @db.VarChar(90)
+  plano                String?                @db.VarChar(90)
+  matricula            String?                @db.VarChar(45)
+  validade             DateTime?              @db.Date
   foto                 String?                @db.VarChar(255)
   data_criacao         DateTime               @default(now()) @db.DateTime(0)
   data_modificacao     DateTime?              @db.DateTime(0)
