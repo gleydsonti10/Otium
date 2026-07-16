@@ -23,7 +23,8 @@ yarn-error.log*
 out/
 build/
 
-# IDE files
-.vscode/
+# IDE files — ignora configurações pessoais, mas compartilha extensões recomendadas
+.vscode/*
+!.vscode/extensions.json
 .idea/
 .DS_Store

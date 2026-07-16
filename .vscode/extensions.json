@@ -1,0 +1,56 @@
+{
+  "recommendations": [
+
+    // ─── TypeScript & JavaScript ──────────────────────────────────────────────
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+    "christian-kohler.path-intellisense",
+
+    // ─── React & Next.js ──────────────────────────────────────────────────────
+    "dsznajder.es7-react-js-snippets",
+    "burkeholland.simple-react-snippets",
+    "YoavBls.pretty-ts-errors",
+
+    // ─── Tailwind CSS ─────────────────────────────────────────────────────────
+    "bradlc.vscode-tailwindcss",
+
+    // ─── Prisma (ORM / Schema) ────────────────────────────────────────────────
+    "Prisma.prisma",
+
+    // ─── MySQL / Banco de Dados ───────────────────────────────────────────────
+    "cweijan.vscode-mysql-client2",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-mysql",
+
+    // ─── Git & GitHub ─────────────────────────────────────────────────────────
+    "eamodio.gitlens",
+    "GitHub.vscode-pull-request-github",
+    "mhutchie.git-graph",
+
+    // ─── REST / API Testing ───────────────────────────────────────────────────
+    "humao.rest-client",
+    "rangav.vscode-thunder-client",
+
+    // ─── Produtividade & DX ───────────────────────────────────────────────────
+    "christian-kohler.npm-intellisense",
+    "formulahendry.auto-rename-tag",
+    "formulahendry.auto-close-tag",
+    "VisualStudioExptTeam.vscodeintellicode",
+    "usernamehw.errorlens",
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-portuguese-brazilian",
+    "wayou.vscode-todo-highlight",
+    "gruntfuggly.todo-tree",
+    "pkief.material-icon-theme",
+
+    // ─── Ambiente & Docker ────────────────────────────────────────────────────
+    "ms-azuretools.vscode-docker",
+    "mikestead.dotenv",
+
+    // ─── JSON & Markdown ──────────────────────────────────────────────────────
+    "zainchen.json",
+    "yzhang.markdown-all-in-one",
+    "DavidAnson.vscode-markdownlint"
+  ]
+}
